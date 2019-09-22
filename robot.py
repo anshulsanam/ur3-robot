@@ -156,6 +156,7 @@ while counter < 10.0:
 		current_joint_angle[0] += np.pi * 2
 		SetJointPosition(current_joint_angle)
 		previousCounter = counter
+	time.sleep(0.5)
 
 # Wait two seconds
 time.sleep(2)
