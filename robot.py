@@ -56,7 +56,8 @@ def SetJointPosition(theta):
 	vrep.simxSetJointTargetPosition(clientID, joint_five_handle, theta[4], vrep.simx_opmode_oneshot)
 	time.sleep(0)
 	vrep.simxSetJointTargetPosition(clientID, joint_six_handle, theta[5], vrep.simx_opmode_oneshot)
-	time.sleep(2)
+	time.sleep(3.6)
+
 
 # Function that used to read joint angles
 def GetJointAngle():
@@ -103,32 +104,32 @@ print(stringData)
 '''
 
 # Get "handle" to the base of robot
-result, base_handle = vrep.simxGetObjectHandle(clientID, 'UR3_link1_visible', vrep.simx_opmode_blocking)
+result, base_handle = vrep.simxGetObjectHandle(clientID, 'UR10_link1_visible', vrep.simx_opmode_blocking)
 if result != vrep.simx_return_ok:
 	raise Exception('could not get object handle for base frame')
 	
 # Get "handle" to the all joints of robot
-result, joint_one_handle = vrep.simxGetObjectHandle(clientID, 'UR3_joint1', vrep.simx_opmode_blocking)
+result, joint_one_handle = vrep.simxGetObjectHandle(clientID, 'UR10_joint1', vrep.simx_opmode_blocking)
 if result != vrep.simx_return_ok:
 	raise Exception('could not get object handle for first joint')
-result, joint_two_handle = vrep.simxGetObjectHandle(clientID, 'UR3_joint2', vrep.simx_opmode_blocking)
+result, joint_two_handle = vrep.simxGetObjectHandle(clientID, 'UR10_joint2', vrep.simx_opmode_blocking)
 if result != vrep.simx_return_ok:
 	raise Exception('could not get object handle for second joint')
-result, joint_three_handle = vrep.simxGetObjectHandle(clientID, 'UR3_joint3', vrep.simx_opmode_blocking)
+result, joint_three_handle = vrep.simxGetObjectHandle(clientID, 'UR10_joint3', vrep.simx_opmode_blocking)
 if result != vrep.simx_return_ok:
 	raise Exception('could not get object handle for third joint')
-result, joint_four_handle = vrep.simxGetObjectHandle(clientID, 'UR3_joint4', vrep.simx_opmode_blocking)
+result, joint_four_handle = vrep.simxGetObjectHandle(clientID, 'UR10_joint4', vrep.simx_opmode_blocking)
 if result != vrep.simx_return_ok:
 	raise Exception('could not get object handle for fourth joint')
-result, joint_five_handle = vrep.simxGetObjectHandle(clientID, 'UR3_joint5', vrep.simx_opmode_blocking)
+result, joint_five_handle = vrep.simxGetObjectHandle(clientID, 'UR10_joint5', vrep.simx_opmode_blocking)
 if result != vrep.simx_return_ok:
 	raise Exception('could not get object handle for fifth joint')
-result, joint_six_handle = vrep.simxGetObjectHandle(clientID, 'UR3_joint6', vrep.simx_opmode_blocking)
+result, joint_six_handle = vrep.simxGetObjectHandle(clientID, 'UR10_joint6', vrep.simx_opmode_blocking)
 if result != vrep.simx_return_ok:
 	raise Exception('could not get object handle for sixth joint')
 
 # Get "handle" to the end-effector of robot
-result, end_handle = vrep.simxGetObjectHandle(clientID, 'UR3_link7_visible', vrep.simx_opmode_blocking)
+result, end_handle = vrep.simxGetObjectHandle(clientID, 'UR10_link7_visible', vrep.simx_opmode_blocking)
 if result != vrep.simx_return_ok:
 	raise Exception('could not get object handle for end effector')
 # ==================================================================================================== #
@@ -137,20 +138,36 @@ if result != vrep.simx_return_ok:
 vrep.simxStartSimulation(clientID, vrep.simx_opmode_oneshot)
 
 # ******************************** Your robot control code goes here  ******************************** #
-time.sleep(1)
+time.sleep(0.1)
 counter = vrep.simxGetFloatSignal(clientID, "counter", vrep.simx_opmode_streaming)[1]
+vrep.simxSetFloatSignal(clientID, "RG2_open", 1, vrep.simx_opmode_oneshot)
 previousCounter = counter
 # Goal_joint_angles = np.array([[0,0,-0.5*np.pi,0.5*np.pi,-0.5*np.pi,-0.5*np.pi], \
 # 							[0.5*np.pi,0,-0.5*np.pi,0.5*np.pi,0.5*np.pi,-0.5*np.pi],\
-# 							[-0.5*np.pi,-0.5*np.pi,-0.5*np.pi,0,-0.5*np.pi,-0.5*np.pi],\
-# 							[200*np.pi,0,0,0,0,0]])
-# for i in range(len(Goal_joint_angles)):
-# 	print(vrep.simxGetFloatSignal(clientID, "counter", vrep.simx_opmode_buffer))
-# 	SetJointPosition(Goal_joint_angles[i])
-# 	time.sleep(2)
+# 							[-0.5*np.pi,-0.5*np.pi,-0.5*np.pi,0,-0.5*np.pi,-0.5*np.pi]])
+Goal_joint_angles = np.array([\
+							[0,0,0,0,0,0], \
+							[0.5*np.pi,0,0,0,0,0], \
+							[0,0.25*np.pi,0,0,0,0], \
+							[0,0,0.5*np.pi,0,0,0], \
+							[0,0,0,0.5*np.pi,0,0], \
+							[0,0,0,0,0.5*np.pi,0], \
+							[0,0,0,0,0,0.5*np.pi], \
+							# [0,0,0.45*np.pi,0,-0.5*np.pi,0], \
+							[0,0.1*np.pi,0.35*np.pi,0.05*np.pi,-0.5*np.pi,0], \
+							])
+for i in range(len(Goal_joint_angles)):
+	SetJointPosition(Goal_joint_angles[i])
+	time.sleep(0.25)
+	X,Y,Z = get_joint()
+	vrep.simxAddStatusbarMessage(clientID, "end effector relative to base: (" + str(X[5]) + ", " + str(Y[5]) + ", " + str(Z[5]) + ").", vrep.simx_opmode_oneshot)
+	time.sleep(0.25)
 current_joint_angle = [0,0,0,0,0,0]
 SetJointPosition(current_joint_angle)
+# X,Y,Z = get_joint()
+# print(X,Y,Z)
 while counter < 10.0:
+	break
 	counter = vrep.simxGetFloatSignal(clientID, "counter", vrep.simx_opmode_buffer)[1]
 	if counter != previousCounter:
 		current_joint_angle[0] += np.pi * 2
